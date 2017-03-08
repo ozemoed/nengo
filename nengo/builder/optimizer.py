@@ -63,7 +63,7 @@ def optimize(model, dg, max_passes=None):
     # each operator merge might generate new views).
 
     sig_replacements = {}
-    single_pass = OpMergePass(dg, sig_replacements)
+    single_pass = OpMergePass(dg)
 
     n_initial_ops = len(dg)
     cum_duration = 0.
@@ -84,7 +84,7 @@ def optimize(model, dg, max_passes=None):
         before = len(dg)
 
         with Timer() as t:
-            single_pass(only_merge_ops_with_view)
+            sig_replacements.update(single_pass(only_merge_ops_with_view))
 
         after = len(dg)
         logger.info(
@@ -98,10 +98,10 @@ def optimize(model, dg, max_passes=None):
         # in that case we want to toggle only_merge_ops_with_view which might
         # still yield some significant reduction.
         cum_duration += t.duration
-        mean_reduction_rate = (n_initial_ops - after) / cum_duration
-        last_reduction_rate = (before - after) / t.duration
+        mean_reduction_rate = float(n_initial_ops - after) / cum_duration
+        last_reduction_rate = float(before - after) / t.duration
         threshold = 0.01
-        if .0 < last_reduction_rate < threshold * mean_reduction_rate:
+        if 0. < last_reduction_rate < threshold * mean_reduction_rate:
             logger.info(
                 "Operator reduction rate fell below {} mean reduction rate. "
                 "Stopping optimizer.".format(threshold))
@@ -119,9 +119,8 @@ def optimize(model, dg, max_passes=None):
 
 
 class OpMergePass(object):
-    def __init__(self, dg, sig_replacements):
+    def __init__(self, dg):
         self.dg = BidirectionalDAG(dg)
-        self.sig_replacements = sig_replacements
         self.might_merge = set(dg)
 
         self.sig2ops = WeakKeyDefaultDict(WeakSet)
@@ -135,6 +134,7 @@ class OpMergePass(object):
         self.dependents = None
         self.only_merge_ops_with_view = None
 
+        self.sig_replacements = {}
         self.merged = set()
         self.merged_dependents = set()
         self.opinfo = OpInfo()
@@ -154,9 +154,12 @@ class OpMergePass(object):
         self.merged.clear()
         self.merged_dependents.clear()
         self.opinfo.clear()
+        self.sig_replacements.clear()
 
         # --- Do an optimization pass
         self.perform_merges()
+
+        return self.sig_replacements
 
     def perform_merges(self):
         """Go through all operators and merge them where possible.
@@ -333,7 +336,7 @@ class OpMergePass(object):
                                                 readonly=view.readonly)
 
     def replace_op_signals(self, replaced_signals):
-        ops = [op for s in replaced_signals for op in self.sig2ops[s]]
+        ops = (op for s in replaced_signals for op in self.sig2ops[s])
         for v in ops:
             # Update the op's signals
             for key in dir(v):
