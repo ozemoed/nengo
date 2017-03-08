@@ -11,7 +11,7 @@ from nengo.builder import operator
 from nengo.builder.operator import DotInc, ElementwiseInc, SlicedCopy
 from nengo.builder.signal import Signal
 from nengo.utils.compat import iteritems, itervalues, zip_longest
-from nengo.utils.graphs import reverse_edges, transitive_closure
+from nengo.utils.graphs import BidirectionalDAG, transitive_closure
 from nengo.utils.stdlib import Timer, WeakKeyDefaultDict, WeakSet
 
 logger = logging.getLogger(__name__)
@@ -116,59 +116,6 @@ def optimize(model, dg, max_passes=None):
     del model.operators[:]
     for op in dg:
         model.add_op(op)
-
-
-class BidirectionalDAG(object):
-    """Directed acyclic graph supporting bidirectional traversal.
-
-    Parameters
-    ----------
-    forward : dict
-        Forward edges for each vertex in the form
-        {1: {2, 3}, 2: {3}, 3: set()}.
-
-    Attributes
-    ----------
-    forward : dict
-        Maps vertices to edges in forward direction.
-    backward : dict
-        Maps vertices to edges in backward direction.
-    """
-
-    def __init__(self, forward):
-        self.forward = forward
-        self.backward = reverse_edges(forward)
-
-    def merge(self, vertices, merged_vertex):
-        """Merges vertices in the graph.
-
-        Parameters
-        ----------
-        vertices : set
-            Vertices that are being merged.
-        merged_vertex
-            The vertex that replaces *vertices*.
-        """
-
-        forward_edges = set()
-        for v in vertices:
-            forward_edges.update(self.forward[v])
-            del self.forward[v]
-        self.forward[merged_vertex] = forward_edges
-
-        backward_edges = set()
-        for v in vertices:
-            backward_edges.update(self.backward[v])
-            del self.backward[v]
-        self.backward[merged_vertex] = backward_edges
-
-        for e in forward_edges:
-            self.backward[e].difference_update(vertices)
-            self.backward[e].add(merged_vertex)
-
-        for e in backward_edges:
-            self.forward[e].difference_update(vertices)
-            self.forward[e].add(merged_vertex)
 
 
 class OpMergePass(object):
