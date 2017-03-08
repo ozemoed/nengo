@@ -108,9 +108,10 @@ def optimize(model, dg, max_passes=None):
             break
 
     # Update model signals
-    for key in model.sig:
-        for name, val in iteritems(model.sig[key]):
-            model.sig[key][name] = sig_replacements.get(val, val)
+    for sigdict in itervalues(model.sig):
+        for name in sigdict:
+            while sigdict[name] in sig_replacements:
+                sigdict[name] = sig_replacements[sigdict[name]]
 
     # Reinitialize the model's operator list
     del model.operators[:]
