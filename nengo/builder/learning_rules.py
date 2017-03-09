@@ -76,33 +76,17 @@ class SimBCM(Operator):
     def delta(self):
         return self.updates[0]
 
-    @delta.setter
-    def delta(self, delta):
-        self.updates[0] = delta
-
     @property
     def pre_filtered(self):
         return self.reads[0]
-
-    @pre_filtered.setter
-    def pre_filtered(self, pre_filtered):
-        self.reads[0] = pre_filtered
 
     @property
     def post_filtered(self):
         return self.reads[1]
 
-    @post_filtered.setter
-    def post_filtered(self, post_filtered):
-        self.reads[1] = post_filtered
-
     @property
     def theta(self):
         return self.reads[2]
-
-    @theta.setter
-    def theta(self, theta):
-        self.reads[2] = theta
 
     def _descstr(self):
         return 'pre=%s, post=%s -> %s' % (
@@ -193,33 +177,17 @@ class SimOja(Operator):
     def delta(self):
         return self.updates[0]
 
-    @delta.setter
-    def delta(self, delta):
-        self.updates[0] = delta
-
     @property
     def pre_filtered(self):
         return self.reads[0]
-
-    @pre_filtered.setter
-    def pre_filtered(self, pre_filtered):
-        self.reads[0] = pre_filtered
 
     @property
     def post_filtered(self):
         return self.reads[1]
 
-    @post_filtered.setter
-    def post_filtered(self, post_filtered):
-        self.reads[1] = post_filtered
-
     @property
     def weights(self):
         return self.reads[2]
-
-    @weights.setter
-    def weights(self, theta):
-        self.reads[2] = theta
 
     def _descstr(self):
         return 'pre=%s, post=%s -> %s' % (
@@ -313,49 +281,25 @@ class SimVoja(Operator):
     def delta(self):
         return self.updates[0]
 
-    @delta.setter
-    def delta(self, delta):
-        self.updates[0] = delta
-
     @property
     def learning_signal(self):
         return self.reads[3]
-
-    @learning_signal.setter
-    def learning_signal(self, learning_signal):
-        self.reads[3] = learning_signal
 
     @property
     def pre_decoded(self):
         return self.reads[0]
 
-    @pre_decoded.setter
-    def pre_decoded(self, pre_decoded):
-        self.reads[0] = pre_decoded
-
     @property
     def post_filtered(self):
         return self.reads[1]
-
-    @post_filtered.setter
-    def post_filtered(self, post_filtered):
-        self.reads[1] = post_filtered
 
     @property
     def scaled_encoders(self):
         return self.reads[2]
 
-    @scaled_encoders.setter
-    def scaled_encoders(self, scaled_encoders):
-        self.reads[2] = scaled_encoders
-
     @property
     def weights(self):
         return self.reads[2]
-
-    @weights.setter
-    def weights(self, theta):
-        self.reads[2] = theta
 
     def _descstr(self):
         return 'pre=%s, post=%s -> %s' % (

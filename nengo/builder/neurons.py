@@ -57,27 +57,13 @@ class SimNeurons(Operator):
     def J(self):
         return self.reads[0]
 
-    @J.setter
-    def J(self, J):
-        self.reads[0] = J
-
     @property
     def output(self):
         return self.sets[0]
 
-    @output.setter
-    def output(self, output):
-        self.sets[0] = output
-
     @property
     def states(self):
         return self.sets[1:]
-
-    @states.setter
-    def states(self, states):
-        states = [] if states is None else states
-        del self.sets[1:]
-        self.sets.extend(states)
 
     def _descstr(self):
         return '%s, %s, %s' % (self.neurons, self.J, self.output)

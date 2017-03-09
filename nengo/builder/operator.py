@@ -225,17 +225,9 @@ class TimeUpdate(Operator):
     def step(self):
         return self.sets[0]
 
-    @step.setter
-    def step(self, step):
-        self.sets[0] = step
-
     @property
     def time(self):
         return self.sets[1]
-
-    @time.setter
-    def time(self, time):
-        self.sets[1] = time
 
     def make_step(self, signals, dt, rng):
         step = signals[self.step]
@@ -286,10 +278,6 @@ class PreserveValue(Operator):
     @property
     def dst(self):
         return self.sets[0]
-
-    @dst.setter
-    def dst(self, dst):
-        self.sets[0] = dst
 
     def _descstr(self):
         return str(self.dst)
@@ -343,10 +331,6 @@ class Reset(Operator):
     @property
     def dst(self):
         return self.sets[0]
-
-    @dst.setter
-    def dst(self, dst):
-        self.sets[0] = dst
 
     def _descstr(self):
         return str(self.dst)
@@ -403,17 +387,9 @@ class Copy(Operator):
     def dst(self):
         return self.sets[0]
 
-    @dst.setter
-    def dst(self, dst):
-        self.sets[0] = dst
-
     @property
     def src(self):
         return self.reads[0]
-
-    @src.setter
-    def src(self, src):
-        self.reads[0] = src
 
     def _descstr(self):
         return '%s -> %s' % (self.src, self.dst)
@@ -496,20 +472,9 @@ class SlicedCopy(Operator):
     def dst(self):
         return self.incs[0] if self.inc else self.sets[0]
 
-    @dst.setter
-    def dst(self, dst):
-        if self.inc:
-            self.incs[0] = dst
-        else:
-            self.sets[0] = dst
-
     @property
     def src(self):
         return self.reads[0]
-
-    @src.setter
-    def src(self, src):
-        self.reads[0] = src
 
     def _descstr(self):
         return '%s[%s] -> %s[%s], inc=%s' % (
@@ -576,25 +541,13 @@ class ElementwiseInc(Operator):
     def A(self):
         return self.reads[0]
 
-    @A.setter
-    def A(self, A):
-        self.reads[0] = A
-
     @property
     def X(self):
         return self.reads[1]
 
-    @X.setter
-    def X(self, X):
-        self.reads[1] = X
-
     @property
     def Y(self):
         return self.incs[0]
-
-    @Y.setter
-    def Y(self, Y):
-        self.incs[0] = Y
 
     def _descstr(self):
         return '%s, %s -> %s' % (self.A, self.X, self.Y)
@@ -708,25 +661,13 @@ class DotInc(Operator):
     def A(self):
         return self.reads[0]
 
-    @A.setter
-    def A(self, A):
-        self.reads[0] = A
-
     @property
     def X(self):
         return self.reads[1]
 
-    @X.setter
-    def X(self, X):
-        self.reads[1] = X
-
     @property
     def Y(self):
         return self.incs[0]
-
-    @Y.setter
-    def Y(self, Y):
-        self.incs[0] = Y
 
     def _descstr(self):
         return '%s, %s -> %s' % (self.A, self.X, self.Y)
@@ -883,42 +824,13 @@ class SimPyFunc(Operator):
             return self.sets[0]
         return None
 
-    @output.setter
-    def output(self, output):
-        if len(self.sets) == 1:
-            self.sets[0] = output
-        elif len(self.sets == 0):
-            self.sets.append(output)
-
     @property
     def t(self):
         return self.reads[0] if self.t_passed else None
 
-    @t.setter
-    def t(self, t):
-        if t is not None and self.t_passed:
-            self.reads[0] = t
-        elif t is not None:
-            self.t_passed = True
-            self.reads.insert(0, t)
-        elif t is None and self.t_passed:
-            self.t_passed = False
-            del self.reads[0]
-
     @property
     def x(self):
         return self.reads[-1] if self.x_passed else None
-
-    @x.setter
-    def x(self, x):
-        if x is not None and self.x_passed:
-            self.reads[-1] = x
-        elif x is not None:
-            self.x_passed
-            self.reads.append(x)
-        elif x is None and self.x_passed:
-            self.x_passed = False
-            del self.reads[-1]
 
     def _descstr(self):
         return '%s -> %s, fn=%r' % (self.x, self.output, self.fn.__name__)
