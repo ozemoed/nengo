@@ -65,16 +65,44 @@ class SimBCM(Operator):
     def __init__(self, pre_filtered, post_filtered, theta, delta,
                  learning_rate, tag=None):
         super(SimBCM, self).__init__(tag=tag)
-        self.pre_filtered = pre_filtered
-        self.post_filtered = post_filtered
-        self.theta = theta
-        self.delta = delta
         self.learning_rate = learning_rate
 
         self.sets = []
         self.incs = []
         self.reads = [pre_filtered, post_filtered, theta]
         self.updates = [delta]
+
+    @property
+    def delta(self):
+        return self.updates[0]
+
+    @delta.setter
+    def delta(self, delta):
+        self.updates[0] = delta
+
+    @property
+    def pre_filtered(self):
+        return self.reads[0]
+
+    @pre_filtered.setter
+    def pre_filtered(self, pre_filtered):
+        self.reads[0] = pre_filtered
+
+    @property
+    def post_filtered(self):
+        return self.reads[1]
+
+    @post_filtered.setter
+    def post_filtered(self, post_filtered):
+        self.reads[1] = post_filtered
+
+    @property
+    def theta(self):
+        return self.reads[2]
+
+    @theta.setter
+    def theta(self, theta):
+        self.reads[2] = theta
 
     def _descstr(self):
         return 'pre=%s, post=%s -> %s' % (
@@ -153,10 +181,6 @@ class SimOja(Operator):
     def __init__(self, pre_filtered, post_filtered, weights, delta,
                  learning_rate, beta, tag=None):
         super(SimOja, self).__init__(tag=tag)
-        self.pre_filtered = pre_filtered
-        self.post_filtered = post_filtered
-        self.weights = weights
-        self.delta = delta
         self.learning_rate = learning_rate
         self.beta = beta
 
@@ -164,6 +188,38 @@ class SimOja(Operator):
         self.incs = []
         self.reads = [pre_filtered, post_filtered, weights]
         self.updates = [delta]
+
+    @property
+    def delta(self):
+        return self.updates[0]
+
+    @delta.setter
+    def delta(self, delta):
+        self.updates[0] = delta
+
+    @property
+    def pre_filtered(self):
+        return self.reads[0]
+
+    @pre_filtered.setter
+    def pre_filtered(self, pre_filtered):
+        self.reads[0] = pre_filtered
+
+    @property
+    def post_filtered(self):
+        return self.reads[1]
+
+    @post_filtered.setter
+    def post_filtered(self, post_filtered):
+        self.reads[1] = post_filtered
+
+    @property
+    def weights(self):
+        return self.reads[2]
+
+    @weights.setter
+    def weights(self, theta):
+        self.reads[2] = theta
 
     def _descstr(self):
         return 'pre=%s, post=%s -> %s' % (
@@ -244,12 +300,7 @@ class SimVoja(Operator):
     def __init__(self, pre_decoded, post_filtered, scaled_encoders, delta,
                  scale, learning_signal, learning_rate, tag=None):
         super(SimVoja, self).__init__(tag=tag)
-        self.pre_decoded = pre_decoded
-        self.post_filtered = post_filtered
-        self.scaled_encoders = scaled_encoders
-        self.delta = delta
         self.scale = scale
-        self.learning_signal = learning_signal
         self.learning_rate = learning_rate
 
         self.sets = []
@@ -257,6 +308,54 @@ class SimVoja(Operator):
         self.reads = [
             pre_decoded, post_filtered, scaled_encoders, learning_signal]
         self.updates = [delta]
+
+    @property
+    def delta(self):
+        return self.updates[0]
+
+    @delta.setter
+    def delta(self, delta):
+        self.updates[0] = delta
+
+    @property
+    def learning_signal(self):
+        return self.reads[3]
+
+    @learning_signal.setter
+    def learning_signal(self, learning_signal):
+        self.reads[3] = learning_signal
+
+    @property
+    def pre_decoded(self):
+        return self.reads[0]
+
+    @pre_decoded.setter
+    def pre_decoded(self, pre_decoded):
+        self.reads[0] = pre_decoded
+
+    @property
+    def post_filtered(self):
+        return self.reads[1]
+
+    @post_filtered.setter
+    def post_filtered(self, post_filtered):
+        self.reads[1] = post_filtered
+
+    @property
+    def scaled_encoders(self):
+        return self.reads[2]
+
+    @scaled_encoders.setter
+    def scaled_encoders(self, scaled_encoders):
+        self.reads[2] = scaled_encoders
+
+    @property
+    def weights(self):
+        return self.reads[2]
+
+    @weights.setter
+    def weights(self, theta):
+        self.reads[2] = theta
 
     def _descstr(self):
         return 'pre=%s, post=%s -> %s' % (

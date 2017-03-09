@@ -49,9 +49,8 @@ class SimProcess(Operator):
     def __init__(self, process, input, output, t, mode='set', tag=None):
         super(SimProcess, self).__init__(tag=tag)
         self.process = process
-        self.input = input
-        self.output = output
-        self.t = t
+        self.no_input = input is None
+        self.no_output = output is None
         self.mode = mode
 
         self.reads = [t, input] if input is not None else [t]
@@ -66,6 +65,58 @@ class SimProcess(Operator):
             self.sets = [output] if output is not None else []
         else:
             raise ValueError("Unrecognized mode %r" % mode)
+
+    @property
+    def input(self):
+        return None if self.no_input else self.reads[1]
+
+    @input.setter
+    def input(self, input):
+        if input is not None and self.no_input:
+            self.no_input = False
+            self.reads.append(input)
+        elif input is not None:
+            self.reads[1] = input
+        elif input is None and not self.no_input:
+            self.no_input = True
+            del self.reads[1]
+
+    @property
+    def output(self):
+        if self.no_output:
+            return None
+        elif self.mode == 'update':
+            return self.updates[0]
+        elif self.mode == 'inc':
+            return self.incs[0]
+        elif self.mode == 'set':
+            return self.sets[0]
+
+    @output.setter
+    def output(self, output):
+        if self.mode == 'update':
+            l = self.updates
+        elif self.mode == 'inc':
+            l = self.incs
+        elif self.mode == 'set':
+            l = self.sets
+
+        if output is not None and self.no_output:
+            self.no_output = False
+            l.append(output)
+        elif output is not None:
+            l[0] = output
+        elif output is None and not self.no_outputt:
+            self.no_output = True
+            del l[0]
+
+    @property
+    def t(self):
+        return self.reads[0]
+
+    @t.setter
+    def t(self, t):
+        self.reads[0] = t
 
     def _descstr(self):
         return '%s, %s -> %s' % (self.process, self.input, self.output)
