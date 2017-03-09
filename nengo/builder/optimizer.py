@@ -62,7 +62,6 @@ def optimize(model, dg, max_passes=None):
     # operators without views and then try again merging views (because
     # each operator merge might generate new views).
 
-    sig_replacements = {}
     single_pass = OpMergePass(dg)
 
     n_initial_ops = len(dg)
@@ -84,7 +83,7 @@ def optimize(model, dg, max_passes=None):
         before = len(dg)
 
         with Timer() as t:
-            sig_replacements.update(single_pass(only_merge_ops_with_view))
+            single_pass(only_merge_ops_with_view)
 
         after = len(dg)
         logger.info(
@@ -110,8 +109,8 @@ def optimize(model, dg, max_passes=None):
     # Update model signals
     for sigdict in itervalues(model.sig):
         for name in sigdict:
-            while sigdict[name] in sig_replacements:
-                sigdict[name] = sig_replacements[sigdict[name]]
+            while sigdict[name] in single_pass.sig_replacements:
+                sigdict[name] = single_pass.sig_replacements[sigdict[name]]
 
     # Reinitialize the model's operator list
     del model.operators[:]
@@ -123,6 +122,7 @@ class OpMergePass(object):
     def __init__(self, dg):
         self.dg = BidirectionalDAG(dg)
         self.might_merge = set(dg)
+        self.sig_replacements = {}
 
         self.sig2ops = WeakKeyDefaultDict(WeakSet)
         self.base2views = WeakKeyDefaultDict(WeakSet)
@@ -135,7 +135,6 @@ class OpMergePass(object):
         self.dependents = None
         self.only_merge_ops_with_view = None
 
-        self.sig_replacements = {}
         self.merged = set()
         self.merged_dependents = set()
         self.opinfo = OpInfo()
@@ -155,12 +154,9 @@ class OpMergePass(object):
         self.merged.clear()
         self.merged_dependents.clear()
         self.opinfo.clear()
-        self.sig_replacements.clear()
 
         # --- Do an optimization pass
         self.perform_merges()
-
-        return self.sig_replacements
 
     def perform_merges(self):
         """Go through all operators and merge them where possible.
